@@ -25,6 +25,8 @@ SQLite at `/Volumes/4tb-ext/data/newweb/newweb.sqlite` on the studio: `sites` (o
 sources, next check), `mentions` (every sighting), `checks` (every liveness check), `heartbeat` (per collector).
 
 ## Running
+Repository: https://github.com/internetarchivecanada/new-web (private). The studio copy is not a git clone:
+`deploy` copies this checkout to `~/newweb` on the studio with rsync (leaving its `venv/` and `logs/` alone).
 ```
 tools/studio.sh deploy    # rsync code, make venv
 tools/studio.sh start     # screen sessions nw-hn, nw-bluesky, nw-gharchive, nw-liveness, nw-spn, nw-listing
