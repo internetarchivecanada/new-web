@@ -83,6 +83,8 @@ def connect():
         site TEXT, url TEXT, checked INTEGER, age_days REAL, status INTEGER, verdict TEXT,
         final_url TEXT, bytes INTEGER, title TEXT, error TEXT);
     CREATE INDEX IF NOT EXISTS checks_site ON checks(site, checked);
+    CREATE TABLE IF NOT EXISTS captures(site TEXT PRIMARY KEY, url TEXT, job_id TEXT, submitted INTEGER,
+        finished INTEGER, status TEXT, timestamp TEXT, http_status INTEGER, message TEXT);
     CREATE TABLE IF NOT EXISTS state(k TEXT PRIMARY KEY, v TEXT);
     CREATE TABLE IF NOT EXISTS heartbeat(source TEXT PRIMARY KEY, at INTEGER, seen INTEGER, kept INTEGER, note TEXT);
     ''')

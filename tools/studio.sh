@@ -4,10 +4,10 @@
 # Jobs run in screen sessions (nw-*), which do NOT survive a studio reboot: run "start" again after one.
 set -u
 HOST=${STUDIO:-studioj}
-JOBS="hn bluesky gharchive liveness"
+JOBS="hn bluesky gharchive liveness spn listing"
 case "${1:-}" in
 deploy)
-  rsync -a --delete --exclude __pycache__ --exclude .git "$(dirname "$0")/../" "$HOST:newweb/"
+  rsync -a --delete --exclude __pycache__ --exclude .git --exclude venv --exclude logs "$(dirname "$0")/../" "$HOST:newweb/"
   ssh "$HOST" 'cd ~/newweb && [ -x venv/bin/python ] || /opt/homebrew/bin/python3.12 -m venv venv && venv/bin/pip -q install websockets && mkdir -p logs /Volumes/4tb-ext/data/newweb'
   ;;
 start)
@@ -22,8 +22,13 @@ stop)
 status)
   ssh "$HOST" "screen -ls | grep nw-; pgrep -fl 'python -m newweb\.'; cd ~/newweb && tail -n 2 logs/*.log"
   ;;
+list)
+  # Copy the running list of found sites (index.html + sites.tsv) to the laptop.
+  DEST=${2:-$HOME/tmp/epa/wayback-labs-archive/new-sites}
+  mkdir -p "$DEST" && rsync -a "$HOST:/Volumes/4tb-ext/data/newweb/list/" "$DEST/" && echo "$DEST/index.html"
+  ;;
 report)
   ssh "$HOST" 'cd ~/newweb && venv/bin/python -m newweb.report'
   ;;
-*) echo "usage: $0 deploy|start|stop|status|report"; exit 1 ;;
+*) echo "usage: $0 deploy|start|stop|status|list|report"; exit 1 ;;
 esac
