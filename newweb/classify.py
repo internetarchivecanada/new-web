@@ -171,6 +171,8 @@ FLAGS = [
                         r'cheap (viagra|cialis)|buy followers)\b', re.I)),
 ]
 
+ADULT_CJK = re.compile(r'FANZA|DMM\.R18|アダルト|エロ|無修正|AV女優|成人向け|18禁|色情|成人影片|成人视频|成人視頻|av女优|야동|성인용', re.I)
+
 
 def flags(title, description, text, html):
     head = f'{title or ""} {description or ""} {(text or "")[:6000]}'
@@ -179,6 +181,10 @@ def flags(title, description, text, html):
         n = len(rx.findall(head))
         if n >= (1 if name in ('adult', 'phishing') else 2):
             out.append(name)
+    # Adult pages in languages \b cannot split (Japanese, Chinese, Korean), and the self-applied adult labels.
+    if (ADULT_CJK.search(head) or re.search(r'RTA-5042-1996-1400-1577-RTA|<meta[^>]+name=["\']?rating["\']?[^>]+content=["\']?'
+                                            r'(adult|mature|RTA)', html, re.I)):
+        out.append('adult')
     # A page whose only form asks for a password on a platform subdomain is a classic phishing kit.
     if re.search(r'type=["\']?password', html, re.I) and re.search(r'\b(paypal|apple id|microsoft|office ?365|outlook|netflix|'
                                                                  r'wells fargo|chase|bank of america|coinbase|binance|metamask)\b', head, re.I):

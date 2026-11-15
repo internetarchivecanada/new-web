@@ -29,11 +29,17 @@ def account_ok():
         raise
 
 
+retry = {}   # site -> time before which it is not tried again (after a server error)
+
+
 def anonymous(db, seconds):
     """Anonymous Save Page Now: synchronous, slow and rate-limited, so one URL at a time."""
-    end, n, ok, pause = time.time() + seconds, 0, 0, 20
+    end, n, ok, pause, fails = time.time() + seconds, 0, 0, 20, 0
     while time.time() < end:
-        rows = pick(db, 1, {})
+        now = time.time()
+        for k in [k for k, t in retry.items() if t <= now]:
+            del retry[k]
+        rows = pick(db, 1, retry)
         if not rows:
             time.sleep(60); continue
         site, url = rows[0]
@@ -45,11 +51,17 @@ def anonymous(db, seconds):
             final = r.geturl(); http = r.status
             m = __import__('re').search(r'/web/(\d{14})/', final)
             status, ts = ('success', m.group(1)) if m else ('unknown', None)
-            pause = 20
+            pause, fails = 20, 0
         except urllib.error.HTTPError as e:
             http, msg = e.code, e.read(300).decode('utf8', 'replace')
             if e.code == 429:
                 log('spn anonymous 429, waiting'); pause = min(pause * 2, 600); time.sleep(pause); continue
+            if e.code >= 500:
+                # 520 and friends are passing failures (a retry by hand usually works): try again in 2 h.
+                retry[site] = time.time() + 7200; fails += 1
+                if fails >= 10:
+                    log('spn anonymous: 10 server errors in a row, pausing 10 min'); time.sleep(600); fails = 0
+                time.sleep(pause); continue
             status = 'refused'
         except Exception as e:
             msg = repr(e)[:300]
