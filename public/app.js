@@ -89,7 +89,7 @@
     const title = d.title || host;
     const chips = [];
     chips.push('<a class="chip host" href="' + esc(href({ platform: d.platform })) + '">' + esc(platName(d.platform)) + '</a>');
-    d.tech.slice(0, 4).forEach((t) => chips.push('<a class="chip tech" href="' + esc(href({ tech: t })) + '">' + esc(t) + '</a>'));
+    d.tech.filter((t) => t !== platName(d.platform)).slice(0, 4).forEach((t) => chips.push('<a class="chip tech" href="' + esc(href({ tech: t })) + '">' + esc(t) + '</a>'));
     d.topics.forEach((t) => chips.push('<a class="chip topic" href="' + esc(href({ topic: t })) + '">' + esc(t) + '</a>'));
     const where = d.sources.map((s) => {
       if (s === 'hn' && d.hn) return '<a href="https://news.ycombinator.com/item?id=' + esc(d.hn) + '">Hacker News' + (d.points ? ' (' + d.points + ' points)' : '') + '</a>';
