@@ -83,6 +83,7 @@ def main():
         if time.time() >= next_auth:
             next_auth = time.time() + 3600
         # Submit
+        refused = False
         if time.time() >= backoff:
             for site, url in pick(db, INFLIGHT - len(inflight), inflight):
                 try:
@@ -90,6 +91,10 @@ def main():
                                                               'if_not_archived_within': '30d', 'delay_wb_availability': 0})
                 except urllib.error.HTTPError as e:
                     log('spn submit HTTP', e.code, site)
+                    if e.code == 401:
+                        # The status check can pass while saves are refused (2026-11-14): go anonymous, record nothing.
+                        refused = True
+                        break
                     if e.code in (429, 503, 502):
                         backoff = time.time() + 120
                         break
@@ -111,6 +116,11 @@ def main():
                     db.execute('INSERT OR REPLACE INTO captures VALUES(?,?,?,?,?,?,?,?,?)',
                                (site, url, None, now, now, 'refused', None, None, msg[:300]))
             db.commit()
+        if refused and not inflight:
+            log('spn save refused (401): anonymous mode for 1 h')
+            anonymous(db, 3600)
+            next_auth = time.time()
+            continue
         # Poll
         time.sleep(20)
         for site, (job, url, sub) in list(inflight.items()):
