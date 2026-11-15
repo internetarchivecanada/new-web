@@ -216,10 +216,17 @@
     SOURCES = j.stats.sources;
     STATS = j.stats;
     (j.tech_groups || []).forEach(([t, g]) => { TECH_GROUP[t] = g; });
+    // "Updated as of" in the header, in the viewer's time zone. The list is rewritten every 15 minutes,
+    // so anything older than an hour means the jobs have stopped (a studio restart, for instance).
+    const upd = new Date(STATS.updated * 1000);
+    const stale = Date.now() - upd.getTime() > 3600 * 1000;
+    $('updated').textContent = 'Updated as of ' + upd.toLocaleString('en', { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' }) +
+      (stale ? ' (updates paused)' : '');
+    $('updated').classList.toggle('stale', stale);
     $('stats').innerHTML = '<b>' + STATS.found.toLocaleString() + '</b> sites found since ' + esc(fmtDate(STATS.since)) +
       ' · <b>' + STATS.shown.toLocaleString() + '</b> pictured and shown here · <b>' + STATS.saved.toLocaleString() +
       '</b> saved to the Wayback Machine by this project' +
-      (STATS.held_back ? ' · <a href="?flagged=all">' + STATS.held_back.toLocaleString() + ' flagged</a> and left out' : '') + ' · updated ' + esc(new Date(STATS.updated * 1000).toLocaleString('en', { dateStyle: 'medium', timeStyle: 'short' }));
+      (STATS.held_back ? ' · <a href="?flagged=all">' + STATS.held_back.toLocaleString() + ' flagged</a> and left out' : '');
     render();
   }).catch(() => { $('stats').textContent = 'The list could not be loaded. Please try again later.'; });
 })();
