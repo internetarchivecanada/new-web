@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>New Web Explorer</title>
 <meta name="description" content="Small websites and web apps people are publishing right now, found as they appear, saved in the Wayback Machine, and watched to see how long they last.">
-<link rel="stylesheet" href="style.css?v=2">
+<link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
 <a class="skip" href="#results">Skip to the sites</a>
@@ -42,6 +42,8 @@
     <label><span>Still there?</span><select name="status"><option value="">Any</option>
       <option value="up">Up</option><option value="moved">Moved to another address</option><option value="gone">Gone</option><option value="trouble">Not answering</option></select></label>
     <label><span>Wayback copy</span><select name="saved"><option value="">Either</option><option value="1">Saved by this project</option><option value="0">Not yet</option></select></label>
+    <label><span>Flagged sites</span><select name="flagged"><option value="">Hidden</option><option value="all">Show only flagged</option>
+      <option value="adult">Adult</option><option value="gambling">Gambling</option><option value="phishing">Phishing</option><option value="scam">Scam</option></select></label>
     <label class="check"><input type="checkbox" name="starters" value="1"> <span>Include unfinished starter pages</span></label>
   </div>
   <div class="days" id="days" aria-label="Sites found per day; choose a day to see only that day"></div>
@@ -49,6 +51,9 @@
 </form>
 
 <section aria-label="Sites" id="results" tabindex="-1">
+  <p class="flagnote" id="flagnote" hidden>You are looking at sites flagged automatically as adult, gambling, phishing or scam
+    pages. Pictures are blurred until you choose to see them, and pages flagged as phishing have no live link, only the
+    Wayback Machine copy. <a href="./">Back to all sites</a> · <a href="about.html#flagged">About the flags</a></p>
   <p class="count" id="count"></p>
   <ol class="grid" id="grid"></ol>
   <p class="more" id="more"></p>
@@ -64,6 +69,6 @@
     <p>Feedback? <a href="mailto:info@archive.org?subject=New%20Web%20Explorer">Email us</a></p>
   </div>
 </footer>
-<script src="app.js?v=2"></script>
+<script src="app.js?v=3"></script>
 </body>
 </html>

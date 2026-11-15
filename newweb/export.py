@@ -1,6 +1,8 @@
 """Writes the explorer's data: <EXPLORER>/data/sites.json, data/stats.json and sitemap.xml.
 
-Only sites that were looked at (shots.py) and not flagged as adult, phishing, gambling or scam go in.
+Only sites that were looked at (shots.py) and not flagged as adult, phishing, gambling or scam go in sites.json.
+Flagged sites go in data/flagged.json (same fields plus 'flags'), which the explorer loads only when a viewer turns
+on the Flagged filter, and never in the sitemap.
 Nothing about who posted a link goes in: for Hacker News the story itself is public and linked;
 for GitHub the public repository; for Bluesky only that it was posted there.
 """
@@ -14,12 +16,12 @@ BASE = 'https://wayback-labs.sf.archive.org/new-web/'
 SOURCES = {'hn': 'Hacker News', 'bluesky': 'Bluesky', 'github': 'GitHub', 'ct': 'Certificate logs'}
 
 Q = '''SELECT s.site, s.first_url, s.platform, s.first_seen, s.sources, s.mentions, s.last_verdict, s.checks_done,
-          p.thumb, p.title, p.description, p.lang, p.tech, p.topics, p.starter, c.timestamp,
+          p.thumb, p.title, p.description, p.lang, p.tech, p.topics, p.starter, c.timestamp, p.flags,
           (SELECT ref FROM mentions m WHERE m.site = s.site AND m.source = 'hn' LIMIT 1),
           (SELECT json_extract(extra, '$.repo') FROM mentions m WHERE m.site = s.site AND m.source = 'github' LIMIT 1),
           (SELECT max(json_extract(extra, '$.points')) FROM mentions m WHERE m.site = s.site AND m.source = 'hn')
    FROM sites s JOIN profiles p ON p.site = s.site LEFT JOIN captures c ON c.site = s.site AND c.status = 'success'
-   WHERE p.ok = 1 AND p.flags = '[]'
+   WHERE p.ok = 1 AND (p.flags = '[]') = ?
    ORDER BY s.first_seen DESC'''
 
 FIELDS = ['site', 'url', 'platform', 'seen', 'sources', 'mentions', 'status', 'thumb', 'title', 'desc', 'lang',
@@ -36,13 +38,14 @@ def status_word(v):
     return 'trouble'          # error, blocked, unreachable: may come back
 
 
-def rows(db):
-    for r in db.execute(Q):
+def rows(db, flagged=False):
+    for r in db.execute(Q, (0 if flagged else 1,)):
         (site, url, plat, seen, sources, mentions, verdict, checks, thumb, title, desc, lang, tech, topics,
-         starter, ts, hn, repo, points) = r
-        yield [site, url, plat, seen, [s for s in (sources or '').split(',') if s], mentions, status_word(verdict),
+         starter, ts, flags, hn, repo, points) = r
+        row = [site, url, plat, seen, [s for s in (sources or '').split(',') if s], mentions, status_word(verdict),
                thumb, (title or '')[:160], (desc or '')[:240], (lang or '').split('-')[0].lower()[:5],
                json.loads(tech or '[]'), json.loads(topics or '[]'), starter, ts, hn, repo, points]
+        yield row + [json.loads(flags)] if flagged else row
 
 
 def write(db):
@@ -62,6 +65,10 @@ def write(db):
     with open(tmp, 'w') as f:
         f.write(payload)
     os.replace(tmp, os.path.join(out, 'sites.json'))
+    held = list(rows(db, flagged=True))
+    with open(os.path.join(out, 'flagged.json.tmp'), 'w') as f:
+        json.dump({'fields': FIELDS + ['flags'], 'sites': held}, f, separators=(',', ':'), ensure_ascii=False)
+    os.replace(os.path.join(out, 'flagged.json.tmp'), os.path.join(out, 'flagged.json'))
     with open(os.path.join(out, 'stats.json.tmp'), 'w') as f:
         json.dump(stats, f)
     os.replace(os.path.join(out, 'stats.json.tmp'), os.path.join(out, 'stats.json'))

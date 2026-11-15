@@ -62,6 +62,12 @@ nav a[aria-current] { color: var(--fg); }
 .meta { margin: auto 0 6px; font-size: .82rem; color: var(--mute); }
 .links { margin: 0; font-size: .88rem; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
 .dead { color: var(--gone); }
+.chip.flag { background: var(--card); color: var(--gone); border-color: var(--gone); font-weight: 700; }
+.shot.veiled img { filter: blur(18px) grayscale(.6); transform: scale(1.1); }
+.shot.veiled { overflow: hidden; }
+.unveil { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font: inherit; font-size: .88rem; font-weight: 600;
+  padding: 6px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--fg); cursor: pointer; }
+.flagnote { background: var(--card); border: 1px solid var(--gone); border-radius: 8px; padding: 10px 14px; font-size: .92rem; }
 .more { text-align: center; margin: 22px 0; }
 .btn { display: inline-block; padding: 8px 18px; border-radius: 8px; background: var(--accent); color: #fff; text-decoration: none; font-weight: 600; }
 @media (prefers-color-scheme: dark) { .btn { color: #111; } }

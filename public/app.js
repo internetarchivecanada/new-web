@@ -7,7 +7,7 @@
   const grid = document.getElementById('grid');
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-  const KEYS = ['q', 'sort', 'since', 'source', 'platform', 'tech', 'topic', 'lang', 'status', 'saved', 'starters', 'day', 'page'];
+  const KEYS = ['q', 'sort', 'since', 'source', 'platform', 'tech', 'topic', 'lang', 'status', 'saved', 'starters', 'flagged', 'day', 'page'];
   const TECH_GROUP = {};
   const STATUS = { up: 'Up', moved: 'Moved', gone: 'Gone', trouble: 'Not answering', unchecked: 'Not checked yet' };
   const LANG = new Intl.DisplayNames(['en'], { type: 'language' });
@@ -19,7 +19,10 @@
     glitch: 'Glitch', deno: 'Deno Deploy', 'val-town': 'Val Town', framer: 'Framer', webflow: 'Webflow', notion: 'Notion',
     'codeberg-pages': 'Codeberg Pages', bolt: 'Bolt', v0: 'v0', base44: 'Base44', manus: 'Manus', claude: 'Claude' };
   const platName = (p) => PLATFORM[p] || p;
-  let ALL = [], SOURCES = {}, STATS = {};
+  // Flagged sites (adult, gambling, phishing, scam) are in a separate file, loaded only when a viewer asks for them.
+  const FLAG = { adult: 'Adult', gambling: 'Gambling', phishing: 'Phishing', scam: 'Scam' };
+  let ALL = [], FLAGGED = null, SOURCES = {}, STATS = {};
+  const rowsToObjects = (j) => j.sites.map((r) => { const d = {}; j.fields.forEach((k, i) => { d[k] = r[i]; }); return d; });
 
   function params() {
     const u = new URLSearchParams(location.search), o = {};
@@ -39,8 +42,10 @@
   function filter(o, ignore) {
     const q = (o.q || '').toLowerCase().trim();
     const now = Date.now() / 1000;
-    return ALL.filter((d) => {
+    const pool = o.flagged ? (FLAGGED || []) : ALL;
+    return pool.filter((d) => {
       if (!o.starters && d.starter) return false;
+      if (o.flagged && o.flagged !== 'all' && !d.flags.includes(o.flagged)) return false;
       if (q && !(d.title + ' ' + d.site + ' ' + d.desc).toLowerCase().includes(q)) return false;
       if (ignore !== 'since' && o.since && d.seen < now - o.since * 86400) return false;
       if (ignore !== 'day' && o.day && day(d.seen) !== o.day) return false;
@@ -96,11 +101,18 @@
       if (s === 'github' && d.repo) return '<a href="https://github.com/' + esc(d.repo) + '">GitHub</a>';
       return esc(SOURCES[s] || s);
     }).join(', ');
-    const live = d.status === 'gone' ? '<span class="dead">Live site gone</span>'
+    const flags = d.flags || [];
+    flags.forEach((f) => chips.unshift('<span class="chip flag">' + esc(FLAG[f] || f) + '</span>'));
+    // No live link to a page flagged as phishing: only the Wayback copy.
+    const live = flags.includes('phishing') ? '<span class="dead">No live link (phishing)</span>'
+      : d.status === 'gone' ? '<span class="dead">Live site gone</span>'
       : '<a href="' + esc(d.url) + '" rel="nofollow noopener noreferrer">Live site&nbsp;↗</a>';
-    return '<li class="card"><a class="shot" href="' + esc(wb) + '">' +
-      (d.thumb ? '<img src="thumbs/' + esc(d.thumb) + '" alt="" loading="lazy" width="480" height="300">' : '<span class="noimg">No picture</span>') +
-      '<span class="status s-' + esc(d.status) + '">' + esc(STATUS[d.status] || d.status) + '</span></a>' +
+    const img = d.thumb ? '<img src="thumbs/' + esc(d.thumb) + '" alt="" loading="lazy" width="480" height="300">' : '<span class="noimg">No picture</span>';
+    const shot = flags.length && d.thumb
+      ? '<div class="shot veiled">' + img + '<button type="button" class="unveil">Show picture</button>' +
+        '<span class="status s-' + esc(d.status) + '">' + esc(STATUS[d.status] || d.status) + '</span></div>'
+      : '<a class="shot" href="' + esc(wb) + '">' + img + '<span class="status s-' + esc(d.status) + '">' + esc(STATUS[d.status] || d.status) + '</span></a>';
+    return '<li class="card' + (flags.length ? ' flagged' : '') + '">' + shot +
       '<div class="body"><h2><a href="' + esc(wb) + '">' + esc(title) + '</a></h2>' +
       '<p class="addr">' + esc(host) + '</p>' +
       (d.desc ? '<p class="desc">' + esc(d.desc) + '</p>' : '') +
@@ -125,6 +137,12 @@
 
   function render() {
     const o = params();
+    if (o.flagged && !FLAGGED) {
+      grid.innerHTML = ''; $('count').textContent = 'Loading flagged sites…';
+      fetch('data/flagged.json', { cache: 'no-cache' }).then((r) => r.json()).then((j) => { FLAGGED = rowsToObjects(j); render(); })
+        .catch(() => { FLAGGED = []; render(); });
+      return;
+    }
     KEYS.forEach((k) => {
       const el = form.elements[k];
       if (!el) return;
@@ -134,6 +152,8 @@
     form.elements.since.value = o.since || '';
     form.elements.status.value = o.status || '';
     form.elements.saved.value = o.saved || '';
+    form.elements.flagged.value = o.flagged || '';
+    $('flagnote').hidden = !o.flagged;
     fillSelect('source', o, (d) => d.sources, (v) => SOURCES[v] || v);
     fillSelect('platform', o, (d) => [d.platform], platName);
     fillSelect('tech', o, (d) => d.tech, (v) => v);
@@ -176,6 +196,8 @@
     t = setTimeout(() => { const o = params(); o.q = e.target.value; o.page = ''; go(o, false); }, 250);
   });
   document.addEventListener('click', (e) => {
+    const b = e.target.closest('button.unveil');
+    if (b) { b.parentNode.classList.remove('veiled'); b.remove(); return; }
     const a = e.target.closest('a');
     if (!a || a.target || e.metaKey || e.ctrlKey || e.shiftKey) return;
     const url = new URL(a.href, location.href);
@@ -190,14 +212,14 @@
   window.addEventListener('popstate', render);
 
   fetch('data/sites.json', { cache: 'no-cache' }).then((r) => r.json()).then((j) => {
-    const f = j.fields;
-    ALL = j.sites.map((r) => { const d = {}; f.forEach((k, i) => { d[k] = r[i]; }); return d; });
+    ALL = rowsToObjects(j);
     SOURCES = j.stats.sources;
     STATS = j.stats;
     (j.tech_groups || []).forEach(([t, g]) => { TECH_GROUP[t] = g; });
     $('stats').innerHTML = '<b>' + STATS.found.toLocaleString() + '</b> sites found since ' + esc(fmtDate(STATS.since)) +
       ' · <b>' + STATS.shown.toLocaleString() + '</b> pictured and shown here · <b>' + STATS.saved.toLocaleString() +
-      '</b> saved to the Wayback Machine by this project · updated ' + esc(new Date(STATS.updated * 1000).toLocaleString('en', { dateStyle: 'medium', timeStyle: 'short' }));
+      '</b> saved to the Wayback Machine by this project' +
+      (STATS.held_back ? ' · <a href="?flagged=all">' + STATS.held_back.toLocaleString() + ' flagged</a> and left out' : '') + ' · updated ' + esc(new Date(STATS.updated * 1000).toLocaleString('en', { dateStyle: 'medium', timeStyle: 'short' }));
     render();
   }).catch(() => { $('stats').textContent = 'The list could not be loaded. Please try again later.'; });
 })();
