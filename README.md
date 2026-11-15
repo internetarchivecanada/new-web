@@ -36,13 +36,18 @@ sources, next check), `mentions` (every sighting), `checks` (every liveness chec
 Repository: https://github.com/internetarchivecanada/new-web (private). The studio copy is not a git clone:
 `deploy` copies this checkout to `~/newweb` on the studio with rsync (leaving its `venv/` and `logs/` alone).
 ```
-tools/studio.sh deploy    # rsync code, make venv
-tools/studio.sh start     # screen sessions nw-hn, nw-bluesky, nw-gharchive, nw-liveness, nw-spn, nw-listing
+tools/studio.sh deploy          # rsync code, make venv
+tools/studio.sh install         # launchd daemons com.wbmstudio.newweb-<job> (once; needs sudo on the studio)
+tools/studio.sh restart [job]   # after a deploy, restart one job or all
 tools/studio.sh status
-tools/studio.sh list      # copy the list of found sites to the laptop
+tools/studio.sh list            # copy the list of found sites to the laptop
 tools/studio.sh report
-tools/studio.sh stop
+tools/studio.sh spncheck        # does Save Page Now accept the keys?
+tools/studio.sh uninstall       # remove the daemons
 ```
-Screen sessions do not survive a studio reboot: run `start` again after one.
+Since 2026-11-15 the jobs run as launchd daemons (`tools/launchd/`, written by `tools/launchd/make.sh`): they start
+at boot, run as `mark`, and are restarted 30 s after they stop. Each goes through `/usr/local/libexec/extdrive-exec`,
+which holds the permission that lets daemons read `/Volumes/4tb-ext`. Logs stay in `~/newweb/logs/<job>.log`.
+`start`/`stop` are the older screen sessions, which do not survive a reboot (the studio restart of 2026-11-14 23:14
+stopped everything for 8 hours); they refuse to run while the daemons are installed.
 
-`tools/studio.sh list` copies the list to the laptop.
