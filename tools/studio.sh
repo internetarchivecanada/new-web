@@ -27,8 +27,18 @@ list)
   DEST=${2:-$HOME/tmp/epa/wayback-labs-archive/new-sites}
   mkdir -p "$DEST" && rsync -a "$HOST:/Volumes/4tb-ext/data/newweb/list/" "$DEST/" && echo "$DEST/index.html"
   ;;
+spncheck)
+  # Does Save Page Now accept the project's keys? Prints which key file and the answer, never the keys.
+  ssh "$HOST" 'cd ~/newweb && venv/bin/python -c "
+from newweb import spn
+import urllib.error
+f = spn.load_keys(); print(\"keys from\", f)
+try: print(\"Save Page Now:\", spn.call(\"https://web.archive.org/save/status/user\"))
+except urllib.error.HTTPError as e: print(\"Save Page Now: HTTP\", e.code, e.read(200))
+"'
+  ;;
 report)
   ssh "$HOST" 'cd ~/newweb && venv/bin/python -m newweb.report'
   ;;
-*) echo "usage: $0 deploy|start|stop|status|list|report"; exit 1 ;;
+*) echo "usage: $0 deploy|start|stop|status|list|spncheck|report"; exit 1 ;;
 esac

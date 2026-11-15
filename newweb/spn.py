@@ -8,10 +8,23 @@ import configparser, json, os, time, urllib.error, urllib.parse, urllib.request
 from .common import connect, beat, log
 
 INFLIGHT = int(os.environ.get('NEWWEB_SPN_INFLIGHT', 6))
-cfg = configparser.ConfigParser()
-cfg.read(os.path.expanduser('~/.config/internetarchive/ia.ini'))
-H = {'Authorization': f"LOW {cfg['s3']['access']}:{cfg['s3']['secret']}", 'Accept': 'application/json',
-     'User-Agent': 'WaybackMachineLabs-NewWebStudy/0.1'}
+# The project's own archive.org account, if set up (keys only, never a password or cookies):
+#   ~/.config/newweb/spn.ini   [s3] access = ...  secret = ...   (chmod 600)
+# otherwise the personal keys in ia.ini. Read again at each hourly account check, so new keys need no restart.
+KEYFILES = ['~/.config/newweb/spn.ini', '~/.config/internetarchive/ia.ini']
+H = {}
+
+
+def load_keys():
+    for f in KEYFILES:
+        cfg = configparser.ConfigParser()
+        if cfg.read(os.path.expanduser(f)) and cfg.has_option('s3', 'access'):
+            H.update({'Authorization': f"LOW {cfg['s3']['access']}:{cfg['s3']['secret']}", 'Accept': 'application/json',
+                      'User-Agent': 'WaybackMachineLabs-NewWebStudy/0.1'})
+            return f
+
+
+load_keys()
 
 
 def call(url, data=None):
@@ -20,6 +33,7 @@ def call(url, data=None):
 
 
 def account_ok():
+    load_keys()
     try:
         call('https://web.archive.org/save/status/user')
         return True
