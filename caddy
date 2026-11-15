@@ -1,0 +1,14 @@
+redir /new-web /new-web/
+handle_path /new-web/* {
+	root * /opt/services/new-web/public
+	# Missing addresses get a real HTML page with status 404 (no SPA fallback: every view is
+	# index.html with a query string, so nothing needs one).
+	@missing not file {path} {path}/index.html {path}index.html
+	handle @missing {
+		rewrite * /404.html
+		file_server {
+			status 404
+		}
+	}
+	file_server
+}
