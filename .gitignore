@@ -1,2 +1,9 @@
 __pycache__/
 *.sqlite*
+venv/
+logs/
+# Data written on the studio, never committed (DEPLOY.md rule 3)
+public/data/
+public/thumbs/
+public/sitemap.xml
+.menu

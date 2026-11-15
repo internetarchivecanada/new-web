@@ -1,5 +1,5 @@
-"""Writes the running list of every discovered site, every 15 minutes:
-sites.tsv (all columns) and index.html (sortable, filterable) in /Volumes/4tb-ext/data/newweb/list/."""
+"""Every 15 minutes: writes the running list of every discovered site (sites.tsv and a filterable index.html in
+/Volumes/4tb-ext/data/newweb/list/), then the public explorer's data (export.py)."""
 import html, json, os, time
 from .common import connect, DB, log
 
@@ -74,6 +74,9 @@ def main():
     while True:
         try:
             log('list', write(db), 'sites')
+            from . import export
+            if os.path.isdir(os.path.dirname(export.EXPLORER)):
+                log('explorer', export.write(db), 'sites shown')
         except Exception as e:
             log('list error', repr(e))
         time.sleep(900)

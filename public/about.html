@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About · New Web Explorer</title>
+<meta name="description" content="How the New Web Explorer finds new websites, saves them in the Wayback Machine, and labels them.">
+<link rel="stylesheet" href="style.css?v=1">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the text</a>
+<header class="top"><div class="wrap">
+  <a class="brand" href="./">New Web <span>Explorer</span>
+    <small>Sites and apps people are making right now, saved in the Wayback Machine</small></a>
+  <nav aria-label="Site"><a href="./">Sites</a><a href="about.html" aria-current="page">About</a></nav>
+</div></header>
+
+<main class="wrap prose" id="main">
+<h1>About this site</h1>
+<p class="byline">This site was made by <b>Claude</b>, an AI model made by Anthropic, working in Claude Code at the
+direction of <b>Mark Graham</b> (Internet Archive). Mark decided what it should be and what it should cover; Claude did
+the research, wrote the code that finds, pictures and labels the sites, and put it live on the Internet Archive's
+Wayback Machine Labs.</p>
+
+<h2>What it is</h2>
+<p>People around the world, often working with AI coding tools, are publishing small websites, explorers and web apps
+faster than ever. Many live on free hosting and disappear within months. The Wayback Machine's job is to keep a copy.
+This explorer is a pilot: it finds new sites as they are announced, saves each one in the Wayback Machine, and checks
+back to measure how long they last.</p>
+
+<h2>How sites are found</h2>
+<ul>
+  <li><b>Hacker News.</b> Every "Show HN" post, where people show something they made, except links to big sites
+  such as GitHub or YouTube; and any other story that links to a site on a hosting platform.</li>
+  <li><b>Bluesky.</b> Every new public post is read as it is published, and links to sites on hosting platforms are
+  kept. Only the link and the time are kept, nothing about who posted it.</li>
+  <li><b>GitHub.</b> The public GH Archive record of GitHub activity: new personal sites (<i>name</i>.github.io) and
+  links to hosted sites in new projects' descriptions and release notes.</li>
+</ul>
+<p>"Hosting platforms" are about 50 services where small sites are published, such as GitHub Pages, Vercel, Netlify,
+Cloudflare Pages, Hugging Face Spaces, Replit, Lovable, Fly.io and Render.</p>
+
+<h2>What happens to each site</h2>
+<ol>
+  <li>About an hour after it is found, the site is checked; if it answers, a browser takes a picture of it and reads
+  its title, description and text.</li>
+  <li>Its address is sent to the Wayback Machine's Save Page Now. "Wayback copy" on a card links to that capture;
+  "All Wayback captures" lists any others.</li>
+  <li>The site is checked again 1, 7, 30, 60 and 90 days after it was found. "Gone" means the address no longer
+  exists or the host shows its "nothing here" page; "Moved" means it now sends visitors to another address, often the
+  owner's own domain; "Not answering" may be temporary.</li>
+</ol>
+
+<h2>How the labels are made</h2>
+<ul>
+  <li><b>Built with</b> comes from the page itself: tell-tale file names, page markers and the browser globals that
+  frameworks such as Next.js, React, Vue, Astro and Svelte leave behind, the "generator" tag that site builders write,
+  and the badges and file addresses of AI app builders such as Lovable, Bolt, v0 and Replit. A site built with a tool
+  that leaves no trace has no label.</li>
+  <li><b>Topic</b> comes from keyword rules on the title, description and text. They are simple and explainable,
+  and wrong on some sites; a site can have up to three topics, or none.</li>
+  <li><b>Language</b> is what the page says about itself; many pages do not say.</li>
+  <li><b>Unfinished starter pages</b>, still showing a framework's default title such as "Vite + React", are hidden
+  unless you ask for them.</li>
+</ul>
+
+<h2>What is not shown</h2>
+<p>Pages that look like adult content, gambling, scams or phishing (for example a page asking for a bank or wallet
+login) are saved like any other but kept off this explorer. The rules are automatic and will miss some. If you see
+something that should not be here, or you made a site listed here and want it removed from the explorer, write to
+<a href="mailto:info@archive.org?subject=New%20Web%20Explorer">info@archive.org</a>.</p>
+
+<h2>Web archives welcome</h2>
+<p>Web archives are welcome to capture this site. If your crawler has trouble capturing it, contact
+<a href="mailto:info@archive.org?subject=New%20Web%20Explorer">info@archive.org</a>. Every view has its own address,
+and the <a href="sitemap.xml">sitemap</a> lists the main ones.</p>
+
+<h2>Accessibility</h2>
+<p>We aim for this site to meet the Web Content Accessibility Guidelines (WCAG) 2.2 at level AA: it works with a
+keyboard and a screen reader, every filter has a label, text and controls have enough contrast in light and dark
+mode, and the layout works on a phone. The pictures of sites are screenshots; each card's title and address say what
+it shows. If something does not work for you, please tell us at
+<a href="mailto:info@archive.org?subject=New%20Web%20Explorer%20accessibility">info@archive.org</a>.</p>
+</main>
+
+<footer class="wrap foot">
+  <a href="https://archive.org/"><img src="internet-archive.png" alt="Internet Archive" width="40" height="40"></a>
+  <div>
+    <p>A Wayback Machine Labs experiment, Internet Archive. Captures: <a href="https://web.archive.org/">Wayback Machine</a>.</p>
+    <p>Feedback? <a href="mailto:info@archive.org?subject=New%20Web%20Explorer">Email us</a></p>
+  </div>
+</footer>
+</body>
+</html>

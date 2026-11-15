@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>New Web Explorer</title>
+<meta name="description" content="Small websites and web apps people are publishing right now, found as they appear, saved in the Wayback Machine, and watched to see how long they last.">
+<link rel="stylesheet" href="style.css?v=1">
+</head>
+<body>
+<a class="skip" href="#results">Skip to the sites</a>
+<header class="top"><div class="wrap">
+  <a class="brand" href="./">New Web <span>Explorer</span>
+    <small>Sites and apps people are making right now, saved in the Wayback Machine</small></a>
+  <nav aria-label="Site"><a href="./" aria-current="page">Sites</a><a href="about.html">About</a></nav>
+</div></header>
+
+<main class="wrap">
+<section class="hero">
+  <h1>The new web, as it appears</h1>
+  <p>People, often working with AI coding tools, are publishing small websites and web apps faster than ever, and many
+  disappear within months. This explorer finds them as they are announced on Hacker News, Bluesky and GitHub, takes a
+  picture of each one, saves it in the Wayback Machine, and checks back for 90 days to see whether it is still there.</p>
+  <p class="stats" id="stats" aria-live="polite">Loading…</p>
+</section>
+
+<form class="filters" id="filters" role="search" aria-label="Filter the sites" onsubmit="return false">
+  <div class="row">
+    <label class="grow"><span>Search</span><input type="search" name="q" placeholder="Title, address or description"></label>
+    <label><span>Sort</span><select name="sort">
+      <option value="new">Newest first</option><option value="old">Oldest first</option>
+      <option value="mentions">Most mentioned</option><option value="points">Hacker News points</option></select></label>
+  </div>
+  <div class="row">
+    <label><span>Found</span><select name="since">
+      <option value="">Any time</option><option value="1">Last 24 hours</option><option value="7">Last 7 days</option><option value="30">Last 30 days</option></select></label>
+    <label><span>Found on</span><select name="source"><option value="">All sources</option></select></label>
+    <label><span>Hosted on</span><select name="platform"><option value="">All hosts</option></select></label>
+    <label><span>Built with</span><select name="tech"><option value="">Anything</option></select></label>
+    <label><span>Topic</span><select name="topic"><option value="">All topics</option></select></label>
+    <label><span>Language</span><select name="lang"><option value="">All languages</option></select></label>
+    <label><span>Still there?</span><select name="status"><option value="">Any</option>
+      <option value="up">Up</option><option value="moved">Moved to another address</option><option value="gone">Gone</option><option value="trouble">Not answering</option></select></label>
+    <label><span>Wayback copy</span><select name="saved"><option value="">Either</option><option value="1">Saved by this project</option><option value="0">Not yet</option></select></label>
+    <label class="check"><input type="checkbox" name="starters" value="1"> <span>Include unfinished starter pages</span></label>
+  </div>
+  <div class="days" id="days" aria-label="Sites found per day; choose a day to see only that day"></div>
+  <p class="active" id="active"></p>
+</form>
+
+<section aria-label="Sites" id="results" tabindex="-1">
+  <p class="count" id="count"></p>
+  <ol class="grid" id="grid"></ol>
+  <p class="more" id="more"></p>
+</section>
+<noscript><p>This explorer needs JavaScript to filter the list. The full list is at <a href="data/sites.json">data/sites.json</a>.</p></noscript>
+</main>
+
+<footer class="wrap foot">
+  <a href="https://archive.org/"><img src="internet-archive.png" alt="Internet Archive" width="40" height="40"></a>
+  <div>
+    <p>A Wayback Machine Labs experiment, Internet Archive. Captures: <a href="https://web.archive.org/">Wayback Machine</a>.
+    <a href="about.html">About this site</a>, including how sites are found and labelled, and accessibility.</p>
+    <p>Feedback? <a href="mailto:info@archive.org?subject=New%20Web%20Explorer">Email us</a></p>
+  </div>
+</footer>
+<script src="app.js?v=1"></script>
+</body>
+</html>

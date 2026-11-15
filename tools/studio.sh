@@ -4,11 +4,11 @@
 # Jobs run in screen sessions (nw-*), which do NOT survive a studio reboot: run "start" again after one.
 set -u
 HOST=${STUDIO:-studioj}
-JOBS="hn bluesky gharchive liveness spn listing"
+JOBS="hn bluesky gharchive liveness spn listing shots"
 case "${1:-}" in
 deploy)
   rsync -a --delete --exclude __pycache__ --exclude .git --exclude venv --exclude logs "$(dirname "$0")/../" "$HOST:newweb/"
-  ssh "$HOST" 'cd ~/newweb && [ -x venv/bin/python ] || /opt/homebrew/bin/python3.12 -m venv venv && venv/bin/pip -q install websockets && mkdir -p logs /Volumes/4tb-ext/data/newweb'
+  ssh "$HOST" 'cd ~/newweb && [ -x venv/bin/python ] || /opt/homebrew/bin/python3.12 -m venv venv && venv/bin/pip -q install websockets playwright pillow && mkdir -p logs /Volumes/4tb-ext/data/newweb'
   ;;
 start)
   for j in $JOBS; do

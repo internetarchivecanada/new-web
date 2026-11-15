@@ -1,6 +1,7 @@
 """Bluesky posts via Jetstream (the public JSON firehose). Keeps links to sites on known hosting platforms.
-Stores only the link, the post's at:// address and the time: no author handle, no post text."""
-import asyncio, json, time
+Stores only the link, the time and a one-way hash of the post's address (to count each post once): no author
+identifier, handle or post text."""
+import asyncio, hashlib, json, time
 import websockets
 from .common import connect, record, beat, log, platform_of, site_key
 
@@ -35,7 +36,7 @@ async def run(db):
             for url in links(c.get('record') or {}):
                 site = site_key(url)
                 if site and platform_of(site.split('/')[0])[0]:
-                    ref = f"at://{ev['did']}/{c['collection']}/{c['rkey']}"
+                    ref = hashlib.sha256(f"at://{ev['did']}/{c['collection']}/{c['rkey']}".encode()).hexdigest()[:20]
                     kept += record(db, url, 'bluesky', ref)
                     db.commit()
             if time.time() - last > 60:
