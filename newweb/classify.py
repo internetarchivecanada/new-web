@@ -28,7 +28,7 @@ HTML_RULES = [
     ('Notion', 'Site builder', r'notion\.site|notion-static'),
     ('Google Sites', 'Site builder', r'sites\.google\.com'),
     ('WordPress', 'Generator', r'wp-content/|generator" content="WordPress'),
-    ('Jekyll', 'Generator', r'generator" content="Jekyll|jekyll-theme'),
+    ('Jekyll', 'Generator', r'generator" content="Jekyll|jekyll-theme|Begin Jekyll SEO tag'),
     ('Hugo', 'Generator', r'generator" content="Hugo'),
     ('Hexo', 'Generator', r'generator" content="Hexo'),
     ('Eleventy', 'Generator', r'generator" content="Eleventy'),
@@ -165,7 +165,8 @@ FLAGS = [
                             r'verify your (account|identity|wallet)|validate your wallet|metamask|trust wallet|'
                             r'(sign|log) ?in to (your )?(paypal|apple|microsoft|office|outlook|netflix|amazon|bank|coinbase|binance)|'
                             r'account (has been )?(suspended|locked)|unusual (sign-in|activity))\b', re.I)),
-    ('gambling', re.compile(r'\b(casino|slots?|betting|sportsbook|poker|jackpot|bet now|free spins)\b', re.I)),
+    ('gambling', re.compile(r'\b(casino|online slots?|slot (gacor|online|demo|machines?)|demo slot|gacor|judi|togel|betting|'
+                            r'sportsbook|poker|jackpot|bet now|free spins)\b', re.I)),
     ('scam', re.compile(r'\b(guaranteed (profit|returns)|double your (bitcoin|money|crypto)|investment plan|forex signals?|'
                         r'cheap (viagra|cialis)|buy followers)\b', re.I)),
 ]
