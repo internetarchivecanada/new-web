@@ -13,20 +13,25 @@ from .classify import GROUP
 
 EXPLORER = os.environ.get('NEWWEB_EXPLORER', '/opt/services/new-web/public')
 BASE = 'https://wayback-labs.sf.archive.org/new-web/'
-SOURCES = {'hn': 'Hacker News', 'bluesky': 'Bluesky', 'github': 'GitHub', 'hf': 'Hugging Face', 'ct': 'Certificate logs'}
+SOURCES = {'hn': 'Hacker News', 'bluesky': 'Bluesky', 'github': 'GitHub', 'hf': 'Hugging Face',
+           'aigh': 'GitHub, AI-written code', 'mastodon': 'Mastodon', 'devto': 'DEV Community',
+           'gallery': "AI tools' galleries", 'ct': 'Certificate logs'}
 
 Q = '''SELECT s.site, s.first_url, s.platform, s.first_seen, s.sources, s.mentions, s.last_verdict, s.checks_done,
           p.thumb, p.title, p.description, p.lang, p.tech, p.topics, p.starter, c.timestamp, p.flags,
           (SELECT ref FROM mentions m WHERE m.site = s.site AND m.source = 'hn' LIMIT 1),
-          (SELECT json_extract(extra, '$.repo') FROM mentions m WHERE m.site = s.site AND m.source = 'github' LIMIT 1),
+          (SELECT json_extract(extra, '$.repo') FROM mentions m WHERE m.site = s.site AND m.source IN ('github', 'aigh') LIMIT 1),
           (SELECT max(json_extract(extra, '$.points')) FROM mentions m WHERE m.site = s.site AND m.source = 'hn'),
-          (SELECT ref FROM mentions m WHERE m.site = s.site AND m.source = 'hf' LIMIT 1)
+          (SELECT ref FROM mentions m WHERE m.site = s.site AND m.source = 'hf' LIMIT 1),
+          (SELECT group_concat(DISTINCT json_extract(extra, '$.tool')) FROM mentions m
+             WHERE m.site = s.site AND json_extract(extra, '$.tool') IS NOT NULL),
+          (SELECT json_extract(extra, '$.article') FROM mentions m WHERE m.site = s.site AND m.source = 'devto' LIMIT 1)
    FROM sites s JOIN profiles p ON p.site = s.site LEFT JOIN captures c ON c.site = s.site AND c.status = 'success'
    WHERE p.ok = 1 AND (p.flags = '[]') = ?
    ORDER BY s.first_seen DESC'''
 
 FIELDS = ['site', 'url', 'platform', 'seen', 'sources', 'mentions', 'status', 'thumb', 'title', 'desc', 'lang',
-          'tech', 'topics', 'starter', 'wayback', 'hn', 'repo', 'points', 'space']
+          'tech', 'topics', 'starter', 'wayback', 'hn', 'repo', 'points', 'space', 'article']
 
 
 def status_word(v):
@@ -42,10 +47,12 @@ def status_word(v):
 def rows(db, flagged=False):
     for r in db.execute(Q, (0 if flagged else 1,)):
         (site, url, plat, seen, sources, mentions, verdict, checks, thumb, title, desc, lang, tech, topics,
-         starter, ts, flags, hn, repo, points, space) = r
+         starter, ts, flags, hn, repo, points, space, tools, article) = r
+        tech = json.loads(tech or '[]')
+        tech = [t for t in (tools or '').split(',') if t and t not in tech] + tech   # the agent first
         row = [site, url, plat, seen, [s for s in (sources or '').split(',') if s], mentions, status_word(verdict),
                thumb, (title or '')[:160], (desc or '')[:240], (lang or '').split('-')[0].lower()[:5],
-               json.loads(tech or '[]'), json.loads(topics or '[]'), starter, ts, hn, repo, points, space]
+               tech, json.loads(topics or '[]'), starter, ts, hn, repo, points, space, article]
         yield row + [json.loads(flags)] if flagged else row
 
 

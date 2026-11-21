@@ -32,6 +32,20 @@ BIG = re.compile(r'(^|\.)(github\.com|gitlab\.com|youtube\.com|youtu\.be|x\.com|
                  r'archive\.org|wikipedia\.org|substack\.com|marketplace\.visualstudio\.com)$')
 
 
+# Reference and vendor sites that show-and-tell posts link to but that are not the thing being shown.
+REFERENCE = re.compile(r'(^|\.)(wikipedia\.org|mozilla\.org|stackoverflow\.com|stackexchange\.com|w3\.org|w3schools\.com|'
+                       r'react\.dev|reactjs\.org|nextjs\.org|vuejs\.org|svelte\.dev|angular\.dev|nodejs\.org|deno\.com|bun\.sh|'
+                       r'python\.org|rust-lang\.org|go\.dev|typescriptlang\.org|tailwindcss\.com|vitejs\.dev|astro\.build|'
+                       r'vercel\.com|netlify\.com|cloudflare\.com|supabase\.com|firebase\.google\.com|aws\.amazon\.com|'
+                       r'anthropic\.com|claude\.ai|claude\.com|openai\.com|chatgpt\.com|cursor\.com|cursor\.sh|lovable\.dev|'
+                       r'bolt\.new|v0\.dev|v0\.app|replit\.com|docker\.com|kubernetes\.io|postgresql\.org|mongodb\.com|'
+                       r'buymeacoffee\.com|ko-fi\.com|patreon\.com|gumroad\.com|discord\.gg|discord\.com|t\.me|'
+                       r'instagram\.com|facebook\.com|tiktok\.com|threads\.net|mastodon\.social|dev\.to|hashnode\.com|'
+                       r'substack\.com|notion\.so|figma\.com|canva\.com|unsplash\.com|shields\.io|imgur\.com|giphy\.com|'
+                       r'doi\.org|nih\.gov|researchgate\.net|springer\.com|sciencedirect\.com|nature\.com|acm\.org|ieee\.org|acsm\.org)$'
+                       r'|\.(edu|gov|mil|ac\.[a-z]{2}|edu\.[a-z]{2}|gov\.[a-z]{2})$', re.I)
+
+
 def platform_of(host):
     """Return (platform, suffix) when host is a user site on a known platform, else (None, None)."""
     host = host.lower().rstrip('.')

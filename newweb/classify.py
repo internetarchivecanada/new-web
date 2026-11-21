@@ -20,6 +20,11 @@ HTML_RULES = [
     ('Same', 'AI builder', r'same\.new|same-runtime'),
     ('Windsurf', 'AI builder', r'windsurf\.build'),
     ('Create', 'AI builder', r'create\.xyz|created\.app'),
+    ('DeepSite', 'AI builder', r'enzostvs-deepsite|deepsite\.hf\.co|Made with DeepSite'),
+    ('Websim', 'AI builder', r'websim\.(ai|com)/'),
+    ('Google AI Studio', 'AI builder', r'aistudio\.google\.com|ai\.studio/apps|Built with Google AI Studio'),
+    ('Rocket', 'AI builder', r'rocket\.new|Built with Rocket'),
+    ('Firebase Studio', 'AI builder', r'studio\.firebase\.google\.com|Firebase Studio'),
     ('Framer', 'Site builder', r'framerusercontent\.com|generator" content="Framer'),
     ('Webflow', 'Site builder', r'data-wf-site|webflow\.(js|com)'),
     ('Wix', 'Site builder', r'generator" content="Wix|wixstatic\.com'),
@@ -90,6 +95,8 @@ PROBE_JS = r'''() => {
 
 GROUP = {t: g for t, g, _ in HTML_RULES}
 GROUP.update({'React': 'Framework', 'Vue': 'Framework', 'Svelte': 'Framework'})
+# Coding agents, known from the source (an agent-signed commit, a tool's gallery) rather than from the page.
+GROUP.update({t: 'AI builder' for t in ('Claude Code', 'Cursor', 'GitHub Copilot', 'OpenAI Codex')})
 
 # Default titles of starter templates: the site was published before anything was put in it.
 STARTER = re.compile(r'^(Vite \+ (React|Vue|TS|Svelte|Preact|Lit)( \+ TS)?|React App|Create Next App|Vite App|'
