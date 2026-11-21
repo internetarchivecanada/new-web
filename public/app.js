@@ -99,6 +99,7 @@
     const where = d.sources.map((s) => {
       if (s === 'hn' && d.hn) return '<a href="https://news.ycombinator.com/item?id=' + esc(d.hn) + '">Hacker News' + (d.points ? ' (' + d.points + ' points)' : '') + '</a>';
       if (s === 'github' && d.repo) return '<a href="https://github.com/' + esc(d.repo) + '">GitHub</a>';
+      if (s === 'hf' && d.space) return '<a href="https://huggingface.co/spaces/' + esc(d.space) + '">Hugging Face</a>';
       return esc(SOURCES[s] || s);
     }).join(', ');
     const flags = d.flags || [];

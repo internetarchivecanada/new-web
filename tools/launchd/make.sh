@@ -3,7 +3,7 @@
 # Each starts at boot, runs as mark, and is restarted 30 s after it stops for any reason.
 # extdrive-exec comes first: it holds the Full Disk Access grant that lets daemons read /Volumes/4tb-ext.
 cd "$(dirname "$0")"
-for j in hn bluesky gharchive liveness spn listing shots; do
+for j in hn bluesky gharchive hf liveness spn listing shots; do
 cat > com.wbmstudio.newweb-$j.plist <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
