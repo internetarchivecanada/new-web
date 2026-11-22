@@ -15,7 +15,7 @@ EXPLORER = os.environ.get('NEWWEB_EXPLORER', '/opt/services/new-web/public')
 BASE = 'https://wayback-labs.sf.archive.org/new-web/'
 SOURCES = {'hn': 'Hacker News', 'bluesky': 'Bluesky', 'github': 'GitHub', 'hf': 'Hugging Face',
            'aigh': 'GitHub, AI-written code', 'mastodon': 'Mastodon', 'devto': 'DEV Community',
-           'gallery': "AI tools' galleries", 'ct': 'Certificate logs'}
+           'gallery': "AI tools' galleries", 'labs': 'Wayback Machine Labs', 'ct': 'Certificate logs'}
 
 Q = '''SELECT s.site, s.first_url, s.platform, s.first_seen, s.sources, s.mentions, s.last_verdict, s.checks_done,
           p.thumb, p.title, p.description, p.lang, p.tech, p.topics, p.starter, c.timestamp, p.flags,

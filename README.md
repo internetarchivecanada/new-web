@@ -14,6 +14,7 @@ Finds newly published small sites, explorers and web apps, and measures how fast
 | `mastodon` | mastodon.social hashtag timelines (#vibecoding, #showdev, #sideproject …) and public timelines of fosstodon.org, hachyderm.io, mas.to, every 5 min | any site on the hashtags, hosting-platform sites on the public timelines; only a hash of the post address is kept |
 | `devto` | dev.to articles on #showdev, #sideprojects, #vibecoding … every 15 min | sites the articles link to, minus documentation and vendors (`REFERENCE` in common.py) |
 | `galleries` | Lovable Discover, Made with Lovable, v0 Community, every 2 h | hosting-platform sites listed there, labelled with the tool |
+| `labs` | the Wayback Machine Labs landing page, every 6 h | each tile as its own site (`wayback-labs.sf.archive.org/<name>` is a path site, like github.io projects) |
 | `spn` | Save Page Now | saves each new site's shared URL, newest first, 6 at a time with the account in ia.ini. If the account is refused (HTTP 401, as from 2026-11-14) it falls back to anonymous saves, one every 20 s, and re-checks the account hourly |
 | `listing` | — | writes the running list every 15 min: `list/index.html` (filterable) and `list/sites.tsv` next to the database |
 | `shots` | — | about an hour after a site is found and answers: a screenshot (480 px WEBP), its title, description, language, what it was built with and its topics (`classify.py`); flags adult, phishing, gambling and scam pages so the explorer leaves them out |

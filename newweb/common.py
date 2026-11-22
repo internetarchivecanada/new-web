@@ -46,6 +46,10 @@ REFERENCE = re.compile(r'(^|\.)(wikipedia\.org|mozilla\.org|stackoverflow\.com|s
                        r'|\.(edu|gov|mil|ac\.[a-z]{2}|edu\.[a-z]{2}|gov\.[a-z]{2})$', re.I)
 
 
+# Addresses that hold many separate sites, one per first path segment (like <user>.github.io/<project>).
+PATH_SITES = {'wayback-labs.sf.archive.org'}
+
+
 def platform_of(host):
     """Return (platform, suffix) when host is a user site on a known platform, else (None, None)."""
     host = host.lower().rstrip('.')
@@ -71,6 +75,9 @@ def site_key(url):
     host = u.hostname.lower().rstrip('.')
     if host.startswith('www.'):
         host = host[4:]
+    if host in PATH_SITES:              # many sites under one address, one per first path segment
+        seg = [s for s in u.path.split('/') if s][:1]
+        return f'{host}/{seg[0]}' if seg else host
     if host.endswith(('.github.io', '.gitlab.io', '.codeberg.page')):
         seg = [s for s in u.path.split('/') if s][:1]
         if seg and '.' not in seg[0]:

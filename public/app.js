@@ -17,7 +17,8 @@
     heroku: 'Heroku', railway: 'Railway', replit: 'Replit', lovable: 'Lovable', firebase: 'Firebase', surge: 'Surge',
     neocities: 'Neocities', carrd: 'Carrd', readthedocs: 'Read the Docs', 'gitlab-pages': 'GitLab Pages', streamlit: 'Streamlit',
     glitch: 'Glitch', deno: 'Deno Deploy', 'val-town': 'Val Town', framer: 'Framer', webflow: 'Webflow', notion: 'Notion',
-    'codeberg-pages': 'Codeberg Pages', bolt: 'Bolt', v0: 'v0', base44: 'Base44', manus: 'Manus', claude: 'Claude' };
+    'codeberg-pages': 'Codeberg Pages', bolt: 'Bolt', v0: 'v0', base44: 'Base44', manus: 'Manus', claude: 'Claude',
+    'wayback-labs': 'Wayback Machine Labs' };
   const platName = (p) => PLATFORM[p] || p;
   // Flagged sites (adult, gambling, phishing, scam) are in a separate file, loaded only when a viewer asks for them.
   const FLAG = { adult: 'Adult', gambling: 'Gambling', phishing: 'Phishing', scam: 'Scam' };
@@ -39,6 +40,9 @@
   const fmtDate = (t) => new Date(t * 1000).toLocaleDateString('en', { day: 'numeric', month: 'short', year: 'numeric' });
   const tsDate = (ts) => fmtDate(Date.UTC(+ts.slice(0, 4), +ts.slice(4, 6) - 1, +ts.slice(6, 8)) / 1000);
 
+  // Every word of a search must appear in the title, address, description, host or source.
+  const haystack = (d) => d._h || (d._h = [d.title, d.site, d.desc, platName(d.platform), ...d.sources.map((s) => SOURCES[s] || s), ...d.tech].join(' ').toLowerCase());
+
   function filter(o, ignore) {
     const q = (o.q || '').toLowerCase().trim();
     const now = Date.now() / 1000;
@@ -46,7 +50,7 @@
     return pool.filter((d) => {
       if (!o.starters && d.starter) return false;
       if (o.flagged && o.flagged !== 'all' && !d.flags.includes(o.flagged)) return false;
-      if (q && !(d.title + ' ' + d.site + ' ' + d.desc).toLowerCase().includes(q)) return false;
+      if (q && !q.split(/\s+/).every((w) => haystack(d).includes(w))) return false;
       if (ignore !== 'since' && o.since && d.seen < now - o.since * 86400) return false;
       if (ignore !== 'day' && o.day && day(d.seen) !== o.day) return false;
       if (ignore !== 'source' && o.source && !d.sources.includes(o.source)) return false;

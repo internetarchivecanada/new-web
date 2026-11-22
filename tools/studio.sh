@@ -5,7 +5,7 @@
 # "start"/"stop" are the old screen sessions, for when the daemons are not installed.
 set -u
 HOST=${STUDIO:-studioj}
-JOBS="hn bluesky gharchive hf aicommits mastodon devto galleries liveness spn listing shots"
+JOBS="hn bluesky gharchive hf aicommits mastodon devto galleries labs liveness spn listing shots"
 case "${1:-}" in
 deploy)
   rsync -a --delete --exclude __pycache__ --exclude .git --exclude venv --exclude logs "$(dirname "$0")/../" "$HOST:newweb/"
