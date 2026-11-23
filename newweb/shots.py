@@ -10,7 +10,7 @@ from concurrent.futures import ThreadPoolExecutor
 from playwright.sync_api import sync_playwright
 from PIL import Image
 from .common import connect, beat, log
-from . import classify
+from . import classify, caplog
 
 EXPLORER = os.environ.get('NEWWEB_EXPLORER', '/opt/services/new-web/public')
 THUMBS = os.path.join(EXPLORER, 'thumbs')
@@ -36,13 +36,22 @@ def thumb_name(site):
     return hashlib.sha1(site.encode()).hexdigest()[:16] + '.webp'
 
 
+def _route(r):
+    # A route can outlive its page (navigation, crash, closed context). Letting that error escape makes
+    # Playwright print a 4-line "unroute_all" warning per request, which once filled the disk (2026-11-22).
+    try:
+        r.abort() if r.request.resource_type in BLOCK_TYPES else r.continue_()
+    except Exception:
+        pass
+
+
 def launch(p):
     browser = p.chromium.launch(channel='chrome', chromium_sandbox=True)
     major = browser.version.split('.')[0]
     ua = ('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) '
           f'Chrome/{major}.0.0.0 Safari/537.36 {UA_SUFFIX}')
     ctx = browser.new_context(viewport=VIEWPORT, user_agent=ua, accept_downloads=False, java_script_enabled=True)
-    ctx.route('**/*', lambda r: r.abort() if r.request.resource_type in BLOCK_TYPES else r.continue_())
+    ctx.route('**/*', _route)
     page = ctx.new_page()
     page.set_default_timeout(20000)
     return browser, page
@@ -148,4 +157,5 @@ if __name__ == '__main__':
                               'starter': classify.starter(i['title'], i.get('text'))}, indent=1))
             b.close()
     else:
+        caplog.install('shots')
         main()
