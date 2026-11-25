@@ -69,7 +69,16 @@ def look(db, limit=400):
         except urllib.error.HTTPError as e:
             if e.code in (401, 403, 404):          # deleted or made private
                 db.execute('DELETE FROM hf_pending WHERE id=?', (sid,)); dropped += 1; continue
-            raise
+            if e.code == 429 or e.code >= 500:
+                raise
+            # Other errors are about this one Space (the Hub answers 400 for some broken ones): try it again
+            # later, give up after two days, and go on with the rest instead of ending the round.
+            if now - created > GIVE_UP:
+                db.execute('DELETE FROM hf_pending WHERE id=?', (sid,)); dropped += 1
+            else:
+                db.execute('UPDATE hf_pending SET next=?, tries=tries+1 WHERE id=?', (now + AGAIN, sid))
+            db.commit()
+            continue
         stage = (d.get('runtime') or {}).get('stage', '')
         host = d.get('host')
         if stage in ('RUNNING', 'SLEEPING') and host and not d.get('disabled'):

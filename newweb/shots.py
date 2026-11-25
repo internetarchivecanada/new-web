@@ -115,8 +115,23 @@ def worker(queue, lock, stats):
             db.execute('INSERT OR REPLACE INTO profiles VALUES(:site,:shot,:ok,:thumb,:title,:description,:lang,:tech,'
                        ':topics,:flags,:starter,:final_url,:error)', row)
             db.commit()
+            ALIVE[0] = time.time()
             with lock:
                 stats['ok' if row['ok'] else 'failed'] = stats.get('ok' if row['ok'] else 'failed', 0) + 1
+
+
+# Time the last look finished. A page can hang the browser in a way no Playwright timeout catches
+# (it froze for 10 hours on 2026-11-24), so a watchdog ends the process and launchd starts it again.
+ALIVE = [time.time()]
+STUCK = 600
+
+
+def watchdog():
+    while True:
+        time.sleep(60)
+        if time.time() - ALIVE[0] > STUCK:
+            log('shots watchdog: no look finished in', STUCK, 's; exiting so launchd restarts the job')
+            os._exit(1)
 
 
 def due(db, n):
@@ -130,13 +145,15 @@ def main():
     os.makedirs(THUMBS, exist_ok=True)
     workers = int(os.environ.get('NEWWEB_SHOT_WORKERS', 2))
     db = connect()
+    threading.Thread(target=watchdog, daemon=True).start()
     while True:
         rows = due(db, 200)
         if not rows:
+            ALIVE[0] = time.time() + 300
             time.sleep(300)
             continue
         queue, lock, stats = list(reversed(rows)), threading.Lock(), {}
-        t = time.time()
+        t = ALIVE[0] = time.time()
         with ThreadPoolExecutor(workers) as ex:
             for _ in range(workers):
                 ex.submit(worker, queue, lock, stats)
