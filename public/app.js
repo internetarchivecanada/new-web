@@ -23,6 +23,8 @@
   // Flagged sites (adult, gambling, phishing, scam) are in a separate file, loaded only when a viewer asks for them.
   const FLAG = { adult: 'Adult', gambling: 'Gambling', phishing: 'Phishing', scam: 'Scam' };
   let ALL = [], FLAGGED = null, SOURCES = {}, STATS = {};
+  // Until sites.json (megabytes) arrives, the plain first view is drawn from data/first.json (the newest 60).
+  let PARTIAL = false, FIRST_TOTAL = 0;
   const rowsToObjects = (j) => j.sites.map((r) => { const d = {}; j.fields.forEach((k, i) => { d[k] = r[i]; }); return d; });
 
   function params() {
@@ -150,6 +152,13 @@
         .catch(() => { FLAGGED = []; render(); });
       return;
     }
+    if (PARTIAL) {
+      if (location.search) { $('count').textContent = 'Loading the full list…'; return; }   // a filter was picked early
+      grid.innerHTML = ALL.map(card).join('');
+      $('count').textContent = (FIRST_TOTAL || ALL.length).toLocaleString() + ' sites, showing the first ' + ALL.length.toLocaleString();
+      $('more').innerHTML = '';
+      return;
+    }
     KEYS.forEach((k) => {
       const el = form.elements[k];
       if (!el) return;
@@ -218,7 +227,7 @@
   });
   window.addEventListener('popstate', render);
 
-  fetch('data/sites.json', { cache: 'no-cache' }).then((r) => r.json()).then((j) => {
+  function load(j) {
     ALL = rowsToObjects(j);
     SOURCES = j.stats.sources;
     STATS = j.stats;
@@ -235,5 +244,14 @@
       '</b> saved to the Wayback Machine by this project' +
       (STATS.held_back ? ' · <a href="?flagged=all">' + STATS.held_back.toLocaleString() + ' flagged</a> and left out' : '');
     render();
-  }).catch(() => { $('stats').textContent = 'The list could not be loaded. Please try again later.'; });
+  }
+
+  let full = false;
+  const whole = fetch('data/sites.json', { cache: 'no-cache' }).then((r) => r.json()).then((j) => { full = true; PARTIAL = false; load(j); });
+  // The plain first view (no filters, search or later page) is drawn at once from the small file.
+  if (!location.search) {
+    fetch('data/first.json').then((r) => r.json())
+      .then((j) => { if (!full && !location.search) { PARTIAL = true; FIRST_TOTAL = j.total; load(j); } }).catch(() => {});
+  }
+  whole.catch(() => { $('stats').textContent = 'The list could not be loaded. Please try again later.'; });
 })();

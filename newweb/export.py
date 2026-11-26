@@ -56,6 +56,9 @@ def rows(db, flagged=False):
         yield row + [json.loads(flags)] if flagged else row
 
 
+FIRST_PAGE = 60          # the explorer's PER_PAGE
+
+
 def write(db):
     data = list(rows(db))
     out = os.path.join(EXPLORER, 'data')
@@ -73,6 +76,15 @@ def write(db):
     with open(tmp, 'w') as f:
         f.write(payload)
     os.replace(tmp, os.path.join(out, 'sites.json'))
+    # The explorer's first screen (newest first, starter pages left out, 60 cards) in a file of a few
+    # kilobytes, so the cards and their pictures show at once while sites.json (megabytes) loads.
+    seen, starter = FIELDS.index('seen'), FIELDS.index('starter')
+    plain = [r for r in data if not r[starter]]
+    first_page = sorted(plain, key=lambda r: -r[seen])[:FIRST_PAGE]
+    with open(os.path.join(out, 'first.json.tmp'), 'w') as f:
+        json.dump({'stats': stats, 'fields': FIELDS, 'tech_groups': sorted(GROUP.items()), 'total': len(plain), 'sites': first_page},
+                  f, separators=(',', ':'), ensure_ascii=False)
+    os.replace(os.path.join(out, 'first.json.tmp'), os.path.join(out, 'first.json'))
     held = list(rows(db, flagged=True))
     with open(os.path.join(out, 'flagged.json.tmp'), 'w') as f:
         json.dump({'fields': FIELDS + ['flags'], 'sites': held}, f, separators=(',', ':'), ensure_ascii=False)
